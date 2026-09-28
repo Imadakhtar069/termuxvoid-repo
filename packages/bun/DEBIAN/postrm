@@ -1,0 +1,6 @@
+#!/data/data/com.termux/files/usr/bin/bash
+
+npm uninstall -g bun 2>/dev/null || true
+
+echo "bun removed."
+exit 0

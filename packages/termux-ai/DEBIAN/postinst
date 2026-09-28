@@ -1,0 +1,17 @@
+#!/data/data/com.termux/files/usr/bin/bash
+set -e
+
+PREFIX=${PREFIX:-/data/data/com.termux/files/usr}
+VERSION="4.0"
+
+BIN_DIR="$PREFIX/bin"
+mkdir -p "$BIN_DIR"
+
+echo "Downloading termux-ai ${VERSION}..."
+curl -fsSL "https://raw.githubusercontent.com/Anon4You/Termux-Ai/main/termux-ai.sh" -o "$BIN_DIR/termux-ai"
+chmod +x "$BIN_DIR/termux-ai"
+
+echo "termux-ai ${VERSION} installed successfully."
+echo "Run 'termux-ai' to start."
+exit 0
+

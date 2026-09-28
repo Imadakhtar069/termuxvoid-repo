@@ -1,0 +1,34 @@
+#!/data/data/com.termux/files/usr/bin/bash
+set -e
+
+REPO="https://github.com/RickdeJager/StegSeek/archive/refs/tags/v0.6.tar.gz"
+TMP_DIR="$TMPDIR/stegseek-build"
+BIN_DIR="$PREFIX/bin"
+
+rm -rf "$TMP_DIR" 2>/dev/null || true
+mkdir -p "$TMP_DIR"
+
+curl -fsSL -o "$TMP_DIR/stegseek.tar.gz" "$REPO"
+tar xzf "$TMP_DIR/stegseek.tar.gz" -C "$TMP_DIR"
+cd "$TMP_DIR/stegseek-0.6"
+
+# C++17 removed std::binary_function/std::unary_function; restore them for
+# the legacy steghide-derived headers.
+for f in src/SampleValue.h src/WKSConstructionHeuristic.h src/WavPCMSampleValue.h; do
+  grep -q TV_STD_FUNCTOR_SHIM "$f" && continue
+  sed -i '0,/^[ \t]*#include/{/^[ \t]*#include/a\
+#if __cplusplus > 201402L\n#ifndef TV_STD_FUNCTOR_SHIM\n#define TV_STD_FUNCTOR_SHIM\nnamespace std {\ntemplate<class Arg, class Result> struct unary_function { typedef Arg argument_type; typedef Result result_type; };\ntemplate<class A1, class A2, class Res> struct binary_function { typedef A1 first_argument_type; typedef A2 second_argument_type; typedef Res result_type; };\n}\n#endif\n#endif
+
+}' "$f"
+done
+
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build -j$(nproc 2>/dev/null || echo 2)
+
+install -Dm755 build/src/stegseek "$BIN_DIR/stegseek"
+
+cd / && rm -rf "$TMP_DIR"
+
+echo "stegseek installed. Run 'stegseek'"
+echo "Example: stegseek stego.jpg wordlist.txt"
+exit 0

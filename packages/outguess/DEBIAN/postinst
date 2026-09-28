@@ -1,0 +1,23 @@
+#!/data/data/com.termux/files/usr/bin/bash
+set -e
+
+REPO="https://github.com/resurrecting-open-source-projects/outguess.git"
+TMP_DIR="$TMPDIR/outguess-build"
+TAG="0.4"
+
+rm -rf "$TMP_DIR" 2>/dev/null || true
+
+git clone --depth 1 --branch "$TAG" -q "$REPO" "$TMP_DIR"
+cd "$TMP_DIR"
+
+./autogen.sh
+./configure CC=clang --prefix="$PREFIX" --with-generic-jconfig
+
+make CC="clang -std=gnu11" -j$(nproc 2>/dev/null || echo 2)
+make install
+
+cd / && rm -rf "$TMP_DIR"
+
+echo "outguess installed. Run 'outguess'"
+echo "Example: outguess -k key -d secret.txt in.jpg out.jpg"
+exit 0

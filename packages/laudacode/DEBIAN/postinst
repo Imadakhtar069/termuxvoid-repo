@@ -1,0 +1,41 @@
+#!/data/data/com.termux/files/usr/bin/bash
+set -e
+
+VERSION="0.9.0"
+ARCH=$(uname -m)
+
+case "$ARCH" in
+    aarch64)
+        TARGET="aarch64-linux-android"
+        ;;
+    armv7l|armv8l)
+        TARGET="armv7-linux-androideabi"
+        ;;
+    i686)
+        TARGET="i686-linux-android"
+        ;;
+    x86_64)
+        TARGET="x86_64-linux-android"
+        ;;
+    *)
+        echo "Unsupported architecture: $ARCH" >&2
+        exit 1
+        ;;
+esac
+
+DEST="$PREFIX/bin/laudacode"
+TMP_DIR="$TMPDIR/laudacode-build"
+ARCHIVE="laudacode-v${VERSION}-${TARGET}.tar.gz"
+
+rm -rf "$TMP_DIR" 2>/dev/null || true
+mkdir -p "$TMP_DIR"
+
+curl -fsSL -o "$TMP_DIR/$ARCHIVE" "https://github.com/Anon4You/Laudacode/releases/download/v${VERSION}/${ARCHIVE}"
+tar -xzf "$TMP_DIR/$ARCHIVE" -C "$TMP_DIR"
+
+install -Dm755 "$TMP_DIR/laudacode" "$DEST"
+
+cd / && rm -rf "$TMP_DIR"
+
+echo "laudacode installed. Run 'laudacode'"
+exit 0

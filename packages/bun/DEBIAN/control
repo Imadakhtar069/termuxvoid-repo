@@ -1,0 +1,12 @@
+Package: bun
+Version: 1.4.2
+Architecture: all
+Maintainer: Alienkrishn [Anon4You]
+Depends: npm
+Section: devel
+Priority: optional
+Homepage: https://bun.sh
+Description: Incredibly fast JavaScript runtime, bundler, test runner and package manager
+ Bun is an all‑in‑one JavaScript/TypeScript toolkit. This package
+ installs the official native Android build through npm, so no
+ glibc wrapper or manual binary patching is required.

@@ -1,0 +1,9 @@
+#!/data/data/com.termux/files/usr/bin/bash
+HASHCAT_DIR="$PREFIX/opt/hashcat"
+
+mkdir -p "$PREFIX/opt"
+
+# Remove any previous installation so postinst starts from a clean state.
+rm -rf "$HASHCAT_DIR"
+
+exit 0

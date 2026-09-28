@@ -1,0 +1,47 @@
+#!/data/data/com.termux/files/usr/bin/bash
+# Post-installation script for ruby-nokogiri
+
+set -e
+
+VERSION="1.19.4"
+
+echo "Installing Nokogiri ${VERSION} with system libraries..."
+
+# Fetch the nokogiri gumbo parser header at install time instead of shipping
+# it in the package data (matches upstream source, keeps the package small).
+mkdir -p "$PREFIX/include"
+if [ ! -f "$PREFIX/include/nokogiri_gumbo.h" ]; then
+    wget -q "https://raw.githubusercontent.com/sparklemotion/nokogiri/v${VERSION}/gumbo-parser/src/nokogiri_gumbo.h" \
+        -O "$PREFIX/include/nokogiri_gumbo.h" \
+        || curl -fsSL "https://raw.githubusercontent.com/sparklemotion/nokogiri/v${VERSION}/gumbo-parser/src/nokogiri_gumbo.h" \
+        -o "$PREFIX/include/nokogiri_gumbo.h"
+fi
+
+gem install nokogiri -v "${VERSION}" -- --use-system-libraries
+
+# Ruby 4.x no longer auto-loads rubygems, so plain `ruby -rnokogiri` (and any
+# gem require) fails with LoadError. Ship nokogiri into site_ruby (repo
+# convention, cf. ruby-curb) and make it require rubygems itself so it works
+# with or without rubygems preloaded (covers `nokogiri`, `bundler`, scripts).
+GEM_DIR="$(find "$PREFIX/lib/ruby/gems" -maxdepth 4 -type d -name "nokogiri-${VERSION}" | head -n1)"
+SITE_RUBY="$(ruby -rrbconfig -e 'print RbConfig::CONFIG["sitelibdir"]')"
+
+mkdir -p "$SITE_RUBY"
+cp -r "$GEM_DIR/lib/nokogiri" "$SITE_RUBY/"
+cp -r "$GEM_DIR/lib/xsd" "$SITE_RUBY/"
+cp "$GEM_DIR/lib/nokogiri.rb" "$SITE_RUBY/"
+
+for f in "$SITE_RUBY/nokogiri.rb" "$SITE_RUBY/nokogiri/version/info.rb" "$SITE_RUBY/nokogiri/extension.rb"; do
+    [ -f "$f" ] || continue
+    grep -q 'require "rubygems" unless defined?(Gem)' "$f" ||
+        sed -i '1i require "rubygems" unless defined?(Gem)' "$f"
+done
+
+echo "Verifying installation..."
+ruby -rnokogiri -e "puts Nokogiri::VERSION" || {
+    echo "Nokogiri installation failed!" >&2
+    exit 1
+}
+
+echo "Nokogiri ${VERSION} installed successfully."
+exit 0

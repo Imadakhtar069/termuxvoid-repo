@@ -1,0 +1,12 @@
+Package: hashcat
+Version: 7.1.2
+Architecture: all
+Maintainer: Alienkrishn [Anon4You]
+Depends: clang, make, binutils, curl, libc++, libiconv, opencl-vendor-driver, python
+Section: security
+Priority: optional
+Homepage: https://hashcat.net/hashcat/
+Description: World's fastest and most advanced password recovery utility
+ World's fastest and most advanced password recovery utility.
+ Supports multiple attack modes and hundreds of optimized hashing
+ algorithms for penetration testing and security auditing.
